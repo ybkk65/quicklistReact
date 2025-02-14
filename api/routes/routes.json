@@ -1,0 +1,63 @@
+[
+  {
+    "path": "/",
+    "controller": "Home",
+    "action": "Index",
+    "method": "GET",
+    "params": [],
+    "manager": []
+  },
+  {
+    "path": "/liste/add",
+    "controller": "Course",
+    "action": "Add",
+    "method": "POST",
+    "params": [],
+    "manager": [
+      "Liste"
+    ]
+  },
+  {
+    "path": "/perso",
+    "controller": "Perso",
+    "action": "Get",
+    "method": "GET",
+    "params": [
+      "id"
+    ],
+    "manager": [
+      "Perso"
+    ]
+  },
+  {
+    "path": "/liste/all",
+    "controller": "Course",
+    "action": "GetAll",
+    "method": "GET",
+    "params": [],
+    "manager": [
+      "Liste"
+    ]
+  },
+  {
+    "path": "/liste/delete",
+    "controller": "Course",
+    "action": "Delete",
+    "method": "DELETE",
+    "params": [
+      "id"
+    ],
+    "manager": [
+      "Liste"
+    ]
+  },
+  {
+    "path": "/perso/update",
+    "controller": "Perso",
+    "action": "Update",
+    "method": "PUT",
+    "params": ["id"],
+    "manager": ["Perso"]
+  }
+
+]
