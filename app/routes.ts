@@ -9,6 +9,7 @@ export default [
             // Routes imbriquées sous 'perso'
             route("add", "./routes/addLists.tsx"),
             route("all", "./routes/allLists.tsx"),
+            route("update/:id", "routes/updateListe.tsx")
         ]),
     ])
 ] satisfies RouteConfig;

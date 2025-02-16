@@ -18,8 +18,8 @@
     ]
   },
   {
-    "path": "/perso",
-    "controller": "Perso",
+    "path": "/one_liste",
+    "controller": "Course",
     "action": "Get",
     "method": "GET",
     "params": [
@@ -46,18 +46,14 @@
     "method": "DELETE",
     "params": [
       "id"
-    ],
-    "manager": [
-      "Liste"
     ]
   },
   {
-    "path": "/perso/update",
-    "controller": "Perso",
+    "path": "/liste/update",
+    "controller": "Course",
     "action": "Update",
     "method": "PUT",
-    "params": ["id"],
-    "manager": ["Perso"]
+    "params": [""]
   }
 
 ]

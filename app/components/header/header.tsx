@@ -6,10 +6,15 @@ export default function Header() {
         <nav className="bg-green-600 p-2 shadow-md">
             <div className="max-w-6xl mx-auto px-4 flex items-center gap-[100px]">
                 <div>
+                    <Link to="/">
                     <img className="h-18 w-auto" src={Logo} alt="QuickList Logo" />
+                    </Link>
                 </div>
                 <div>
                     <ul className="flex space-x-6 text-white font-semibold">
+                        <li className="hover:text-green-300 cursor-pointer">
+                            <Link to="/">Acceuil</Link>
+                        </li>
                         <li className="hover:text-green-300 cursor-pointer">
                             <Link to="/lists/all">Vos Listes</Link>
                         </li>

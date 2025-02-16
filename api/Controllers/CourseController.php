@@ -1,4 +1,12 @@
 <?php
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 class CourseController {
     private $httpRequest;
@@ -8,6 +16,7 @@ class CourseController {
         $this->httpRequest = $httpRequest;
         $this->config = $config;
     }
+
 
     public function GetAll()
     {
@@ -37,7 +46,17 @@ class CourseController {
             exit;
         }
     }
-    public function Get($id) {
+    public function Get(...$params) {
+        header("Access-Control-Allow-Origin: *");
+        header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+        header("Access-Control-Allow-Headers: Content-Type, Authorization");
+        header("Access-Control-Allow-Credentials: true");
+
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            exit;
+        }
+
+        $id = $params["id"];
 
         if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
             http_response_code(405);
@@ -55,7 +74,7 @@ class CourseController {
         try {
             $bdd = BDD::getInstance($this->config);
 
-            $persoModel = new PersoModel($bdd);
+            $persoModel = new CourseModel($bdd);
             $perso = $persoModel->getById($id);
 
             if ($perso) {
@@ -63,7 +82,7 @@ class CourseController {
                 exit;
             } else {
                 http_response_code(404);
-                echo json_encode(["message" => "Personnage non trouvé"]);
+                echo json_encode(["message" => "liste course non trouvé"]);
                 exit;
             }
         } catch (Exception $e) {
@@ -72,7 +91,16 @@ class CourseController {
             exit;
         }
     }
-    public function Delete($id) {
+    public function Delete(...$params)
+    {
+        header("Access-Control-Allow-Origin: *");
+        header("Access-Control-Allow-Methods: DELETE, OPTIONS");
+        header("Access-Control-Allow-Headers: Content-Type, Authorization");
+        header("Access-Control-Allow-Credentials: true");
+
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            exit;
+        }
 
         if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
             http_response_code(405);
@@ -80,38 +108,33 @@ class CourseController {
             exit;
         }
 
-
-        if ($id === null) {
-            http_response_code(400);
-            echo json_encode(["message" => "ID manquant"]);
-            exit;
-        }
+        $id = $params["id"];
 
         try {
-            header("Access-Control-Allow-Origin: *");
-            header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
-            header("Access-Control-Allow-Headers: Content-Type");
-
             $bdd = BDD::getInstance($this->config);
-
             $courseModel = new CourseModel($bdd);
-            $course = $courseModel->deleteById($id);
 
-            if ($course === true) {
-                http_response_code(201);
-                echo json_encode(["message" => "la liste de course avec l'id {$id} a été supprimer avec succès"]);
-                exit;
-            } else {
+            if (!$courseModel->getById($id)) {
                 http_response_code(404);
-                echo json_encode(["message" => "la liste de course avec l'id {$id} n'existe pas"]);
+                echo json_encode(["message" => "Liste de course non trouvée"]);
                 exit;
+            }
+
+            if ($courseModel->deleteById($id)) {
+                http_response_code(200);
+                echo json_encode(["message" => "Liste de course n°{$id} supprimée avec succès"]);
+            } else {
+                http_response_code(400);
+                echo json_encode(["message" => "Échec de la suppression"]);
             }
         } catch (Exception $e) {
             http_response_code(500);
-            echo json_encode(["message" => "Erreur interne du serveur"]);
-            exit;
+            echo json_encode(["message" => "Erreur interne du serveur", "error" => $e->getMessage()]);
         }
+        exit;
     }
+
+
     public function Add() {
         header("Content-Type: application/json; charset=UTF-8");
         header("Access-Control-Allow-Origin: *");
@@ -162,9 +185,7 @@ class CourseController {
             exit;
         }
     }
-
-
-    public function Update($id) {
+    public function Update() {
         header("Content-Type: application/json; charset=UTF-8");
         header("Access-Control-Allow-Origin: *");
         header("Access-Control-Allow-Methods: PUT");
@@ -175,22 +196,17 @@ class CourseController {
             exit;
         }
 
+        // Récupération des données envoyées
+        $data = json_decode(file_get_contents('php://input'), true);
+        $id = isset($data['id']) ? $data['id'] : null;
+
         if ($id === null) {
             http_response_code(400);
             echo json_encode(["message" => "ID manquant"]);
             exit;
         }
 
-        $data = json_decode(file_get_contents('php://input'), true);
-
-        if (
-            empty($data['pseudo']) ||
-            empty($data['title']) ||
-            empty($data['class']) ||
-            !isset($data['stats']) ||
-            !is_array($data['stats']) ||
-            !isset($data['stats']['strength'], $data['stats']['dexterity'], $data['stats']['luck'], $data['stats']['intelligence'], $data['stats']['wisdom'])
-        ) {
+        if (empty($data['name']) || !isset($data['items']) || !is_array($data['items'])) {
             http_response_code(400);
             echo json_encode(["message" => "Données invalides ou incomplètes"]);
             exit;
@@ -198,23 +214,24 @@ class CourseController {
 
         try {
             $bdd = BDD::getInstance($this->config);
-            $persoModel = new PersoModel($bdd);
-            $updated = $persoModel->updateById($id, $data);
+            $courseModel = new CourseModel($bdd);
+            $updated = $courseModel->updateById($id, $data);
 
             if ($updated) {
                 http_response_code(200);
-                echo json_encode(["message" => "Personnage mis à jour avec succès"]);
+                echo json_encode(["message" => "Liste mise à jour avec succès"]);
             } else {
                 http_response_code(404);
-                echo json_encode(["message" => "Personnage non trouvé ou aucune modification effectuée"]);
+                echo json_encode(["message" => "Liste non trouvée ou aucune modification effectuée"]);
             }
             exit;
         } catch (Exception $e) {
             http_response_code(500);
-            echo json_encode(["message" => "Erreur interne du serveur"]);
+            echo json_encode(["message" => "Erreur interne du serveur", "error" => $e->getMessage()]);
             exit;
         }
     }
+
 
 }
 

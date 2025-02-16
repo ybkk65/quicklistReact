@@ -1,4 +1,12 @@
 <?php
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 class CourseModel {
     private $bdd;
@@ -73,7 +81,7 @@ class CourseModel {
 
         if ($result) {
             $this->setName($result['name']);
-            $this->setTitle($result['items']);
+            $this->setItems($result['items']);
 
             return $this->getAllProperties();
         }
@@ -93,28 +101,41 @@ class CourseModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function deleteById($id) {
-        // Si backend en PHP
+    public function deleteById($id){
         header("Access-Control-Allow-Origin: *");
         header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
-        header("Access-Control-Allow-Headers: Content-Type");
+        header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
+        return $this->bdd->exec("DELETE FROM liste WHERE id={$id}");
+    }
+
+    public function updateById($id, $data) {
+        header("Access-Control-Allow-Origin: *");
+        header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+        header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
         if (!$this->bdd) {
             throw new Exception("Base de données non initialisée.");
         }
-        $checkStmt = $this->bdd->prepare("SELECT COUNT(*) FROM liste WHERE id = :id");
-        $checkStmt->execute([':id' => $id]);
-        $exists = $checkStmt->fetchColumn();
 
-        if ($exists) {
-            $stmt = $this->bdd->prepare("DELETE FROM liste WHERE id = :id");
-            $stmt->execute([':id' => $id]);
-            return true;
+        // Vérification des données
+        if (empty($data['name']) || !isset($data['items']) || !is_array($data['items'])) {
+            throw new Exception("Données invalides ou incomplètes.");
         }
 
-        return false;
-    }
+        $itemsJson = json_encode($data['items']);
 
+        $stmt = $this->bdd->prepare("
+        UPDATE liste 
+        SET name = :name, items = :items 
+        WHERE id = :id
+    ");
+
+        return $stmt->execute([
+            ':id' => $id,
+            ':name' => $data['name'],
+            ':items' => $itemsJson,
+        ]);
+    }
 
     public function add() {
         if (!$this->bdd) {
@@ -134,6 +155,7 @@ class CourseModel {
             ':items' => $itemsJson,  // Stocker les items sous forme JSON
         ]);
     }
+
 
 
 

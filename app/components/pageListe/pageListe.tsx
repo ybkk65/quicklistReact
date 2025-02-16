@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import CardList from "~/components/CardList/cardList";
+import {faList} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 export default function PageListe() {
     const [shoppingLists, setShoppingLists] = useState([]);
 
     useEffect(() => {
-        // Récupérer les listes depuis l'API
         axios.get("http://127.0.0.1:5556/liste/all")
             .then(response => {
                 setShoppingLists(response.data);
@@ -16,16 +17,23 @@ export default function PageListe() {
             });
     }, []);
 
-    // Fonction pour supprimer une liste après une suppression réussie via l'API
     const handleDelete = (id) => {
         setShoppingLists(prevLists => prevLists.filter(list => list.id !== id));
     };
 
     return (
-        <section className="flex flex-wrap justify-between gap-2 p-4 max-w-6xl mx-auto mt-10">
-            {shoppingLists.map(list => (
-                <CardList key={list.id} shoppingList={list} onDelete={handleDelete} />
-            ))}
+        <section className=" p-4 max-w-6xl mx-auto ">
+            <div className="flex gap-4 items-center mb-10">
+                <FontAwesomeIcon className="text-2xl" icon={faList}/>
+                <h2 className="font-black text-2xl uppercase flex items-center">Vos Listes</h2>
+            </div>
+
+
+            <div className={"flex flex-wrap justify-between gap-2"}>
+                {shoppingLists.map(list => (
+                    <CardList key={list.id} shoppingList={list} onDelete={handleDelete}/>
+                ))}
+            </div>
         </section>
     );
 }
